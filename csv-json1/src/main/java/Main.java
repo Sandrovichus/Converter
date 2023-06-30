@@ -24,20 +24,22 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+        // СSV - JSON парсер
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String fileName = "data.csv";
         List<Employee> list = parseCSV(columnMapping, fileName);
         String json = listToJson(list);
         writeString(json, "data.json");
 
+        // XML - JSON парсер
         List<Employee> list2 = parseXML("data.xml");
         String json2 = listToJson(list2);
         writeString(json2, "data2.json");
 
-//        String json3 = readString("new_data.json");
-//
-//        List<Employee> list3 = jsonToList(json3);
-//        System.out.println(list3);
+        // JSON парсер
+        String json3 = readString("new_data.json");
+        List<Employee> list3 = jsonToList(json3);
+        System.out.println(list3);
 
 
     }
@@ -132,37 +134,43 @@ public class Main {
         return employeeList;
     }
 
-//    public static String readString(String fileName) {
-//        JSONParser parser = new JSONParser();
-//        try {
-//            Object obj = parser.parse(new FileReader(fileName));
-//            JSONObject jsonObject = (JSONObject) obj;
-//            return jsonObject.toString();
-//        } catch (IOException | ParseException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//
-//    }
-//
-//    public static List<Employee> jsonToList(String json) {
-//        List<Employee> list = new ArrayList<Employee>();
-//        GsonBuilder builder = new GsonBuilder();
-//        Gson gson = builder.create();
-//        JSONParser parser = new JSONParser();
-//        try {
-//            Object obj = parser.parse(json);
-//            JSONObject jsonObject = (JSONObject) obj;
-//            JSONArray employees = (JSONArray) jsonObject.get("Employee");
-//            for (Object object : employees) {
-//                Employee employee = gson.fromJson(,Employee.class);
-//                list.add(employee);
-//            }
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//        return list;
-//    }
+    public static String readString(String fileName) {
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(fileName));
+            JSONObject jsonObject = (JSONObject) obj;
+            return jsonObject.toJSONString();
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public static List<Employee> jsonToList(String json) {
+        List<Employee> list = new ArrayList<Employee>();
+        GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
+        Gson gson = builder.create();
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(json);
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray employees = (JSONArray) jsonObject.get("Employee");
+            String[] jsonStringArr = json.split(",\\{");
+            jsonStringArr[0] = "{" + jsonStringArr[0].replace("{\"Employee\":[{", "");
+            jsonStringArr[jsonStringArr.length - 1] = "{" + jsonStringArr[jsonStringArr.length - 1].replace("]}", "");
+            int i = 0;
+            for (Object object : employees) {
+                Employee employee = gson.fromJson(jsonStringArr[i],Employee.class);
+                list.add(employee);
+                i++;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
 
 
